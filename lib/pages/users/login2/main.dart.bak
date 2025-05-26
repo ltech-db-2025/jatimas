@@ -1,0 +1,148 @@
+// ignore_for_file: depend_on_referenced_packages
+
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in_dartio/google_sign_in_dartio.dart';
+// ignore: unused_import
+import 'package:http/http.dart' as http;
+import 'package:ljm/pages/users/login2/user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+void main() async {
+  if (Platform.isWindows) {
+    await GoogleSignInDart.register(clientId: '5513625050-va0ecq5jtincck2urh5skcp2qk7ocnl1.apps.googleusercontent.com');
+  }
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: LoginPage(),
+    );
+  }
+}
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+final googleSignIn = GoogleSignIn(scopes: ['email']);
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController namaController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Login Page")),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextFormField(
+              controller: namaController,
+              decoration: const InputDecoration(labelText: 'Username'),
+            ),
+            TextFormField(
+              controller: passwordController,
+              decoration: const InputDecoration(labelText: 'Password'),
+              obscureText: true,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final user = await loginWithUsernameAndPassword(
+                  namaController.text,
+                  passwordController.text,
+                );
+                if (user != null) {
+                  // Navigasi ke halaman beranda atau halaman selanjutnya
+                  if (kDebugMode) {
+                    dp("Login with nama/password successful.");
+                  }
+                  saveLoginStatus(true);
+                } else {
+                  // Tampilkan pesan kesalahan
+                  if (kDebugMode) {
+                    dp("Login with nama/password failed.");
+                  }
+                }
+              },
+              child: const Text('Login with Username/Password'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final user = await loginWithGoogle();
+                if (user != null) {
+                  // Navigasi ke halaman beranda atau halaman selanjutnya
+                  if (kDebugMode) {
+                    dp("Login with Google successful.");
+                  }
+                  saveLoginStatus(true);
+                } else {
+                  if (kDebugMode) {
+                    dp("Login with Google failed.");
+                  }
+                  saveLoginStatus(false);
+                  await googleSignIn.signOut();
+                }
+              },
+              child: const Text('Login with Google'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<User?> loginWithUsernameAndPassword(String nama, String password) async {
+    /* final response = await http.post(
+      Uri.parse('YOUR_AUTHENTICATION_API_URL'),
+      body: {
+        'nama': nama,
+        'password': password,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // Berhasil login, lakukan apa yang diperlukan
+      return user;
+    } else {
+      // Login gagal
+      return null;
+    } */
+    return listUser.firstWhereOrNull((element) => element.email == nama || element.nama == nama);
+  }
+
+  Future<User?> loginWithGoogle() async {
+    User? user;
+
+    final account = await googleSignIn.signIn();
+    if (account == null) {
+      return null; // Login dibatalkan
+    }
+    user = listUser.firstWhereOrNull((element) => element.email == account.email);
+
+    // final authentication = await account.authentication;
+    // Simpan status login dalam shared preferences
+    saveLoginStatus(true);
+
+    return user;
+  }
+
+  Future<void> saveLoginStatus(bool isLoggedIn) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isLoggedIn', isLoggedIn);
+  }
+}

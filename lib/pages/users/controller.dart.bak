@@ -1,0 +1,405 @@
+// ignore_for_file: depend_on_referenced_packages
+
+import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:ljm/provider/database/controller.dart';
+import 'package:ljm/provider/models/kontak/kontak.dart';
+import 'package:ljm/provider/models/operator/akses/lokasi/model.dart';
+import 'package:ljm/provider/models/operator/akses/rekening/model.dart';
+import 'package:ljm/provider/models/operator/operator.dart';
+import 'package:ljm/tools/env.dart';
+
+class Login2Controller extends GetxController {
+  var opr = Operator();
+  var opr0 = Operator();
+  var tipe = TipeOperator.none.obs;
+  var weslogin = false;
+  GoogleSignIn googleSignIn = GoogleSignIn(
+    forceCodeForRefreshToken: true,
+    scopes: <String>['email', 'https://www.googleapis.com/auth/userinfo.email'],
+  );
+  GoogleSignInAccount? currentUser;
+  var isGudang = false.obs;
+  var isSales = false.obs;
+  var isDireksi = false.obs;
+  var isAdmin = false.obs;
+  var isProses = true.obs;
+  var inProses = ''.obs;
+  var udahlogin = false.obs;
+  var doNavigate = false.obs;
+  savestate() async {
+    try {
+      Operator operator = Operator(idkontak: opr.idkontak, email: opr.email, idlokasi: opr.idlokasi, tipe: opr.tipe, nama: opr.nama, photo: opr.photo);
+      await operator.simpanLocal();
+
+      await AksesLokasi.update();
+      await AksesKas.update();
+
+      prefs.setBool('auth', true);
+      weslogin = true;
+      prefs.setString('email', opr.email.toString());
+      dp("savestate done");
+    } catch (e) {
+      doError('SaveState Login gagal');
+      dp("SaveState Login\n$e");
+      return false;
+    }
+  }
+
+  @override
+  onInit() {
+    isProses = true.obs;
+    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) => _googleListen(account));
+
+    super.onInit();
+  }
+
+  _googleListen(GoogleSignInAccount? account) async {
+    dp('googleSignIn.onCurrentUserChanged.listen');
+    currentUser = account;
+    if (currentUser != null) {
+      dp('googleSignIn.onCurrentUserChanged.listen ${currentUser!.email}=>${opr.email}');
+      if (currentUser!.email != opr.email) await _prepareOperator();
+      // _handleGetContact(currentUser!);
+      // update();
+    } else {
+      setLoading(false);
+    }
+  }
+
+  setProses2(String s) {
+    try {
+      inProses.value = s;
+    } catch (e) {
+      dp(e.toString());
+    }
+  }
+
+  Future<bool> cekLogin() async {
+    bool alogin = (prefs.getBool('auth') ?? false);
+    dp('cekLogin() $alogin => ${prefs.getString('email')}');
+    if (alogin) {
+      if (opr == opr0 || opr.akseslokasi.isEmpty) await _localopr(prefs.getString('email') ?? ""); // _getopr1();
+      udahlogin.value = true;
+      subscribe();
+
+      return true;
+    } else {
+      dp('cekLogin() false');
+      udahlogin.value = false;
+      isProses.value = false;
+      subscribe();
+      // _navigateBasedOnLogin2();
+      return false;
+    }
+  }
+
+  Future<bool> _localopr(String email) async {
+    // dBase = await db.initDatabase();
+    var op = await Operator.byID(email);
+    if (op.email == null) {
+      await _getopr1();
+      op = opr;
+    }
+
+    opr = op.copyWith();
+    dp('tipe: ${opr.tipe}');
+
+    await googleSignIn.signInSilently().then((value) async {
+      currentUser = value;
+      if (currentUser == null) {
+        dp('signInSilently _localopr($email)  => null');
+      } else {
+        dp(' signInSilently_localopr($email)  => ${currentUser!.email}');
+
+        pegawai = await Kontak.byID(op.idkontak);
+        if (pegawai == null) {
+          dp('_localopr kesalahan init pegawai');
+          return false;
+        }
+        if (op.photo != currentUser!.photoUrl) {
+          op.photo = currentUser!.photoUrl;
+          await op.simpanLocal();
+        }
+        if (op.photo != "") opr.photo = op.photo;
+        dp(" ${currentUser!.photoUrl.toString()} =>${op.photo} ");
+        opr.akseslokasi = await AksesLokasi.toList({'email': opr.email});
+        opr.akseskas = await AksesKas.toList({'email': opr.email});
+      }
+    });
+    var xres = true;
+    if (op.idkontak == null) xres = await _getopr1();
+    setOperatorTipe();
+    try {
+      listenMessage();
+    } catch (e) {
+      doError("tidak terhubung notofikasi, \nkesalahan:\n$e");
+    }
+    udahlogin.value = xres;
+    return xres;
+  }
+
+  initNaviationListener() {
+    dp("initNaviationListener()");
+    setLoading(false);
+    subscribe();
+    ever(udahlogin, (value) async => await _navigateBasedOnLogin2());
+  }
+
+  subscribe() {
+    googleSignIn.signInSilently();
+  }
+
+  _prepareOperator() async {
+    dp('_prepareOperator');
+    dBase = await db.initDatabase();
+
+    if (opr == opr0 || opr.idkontak == null) {
+      dp('opr.idkontak == null');
+      isProses.value = true;
+
+      // if (await _localopr(googleSignIn.currentUser!.email) != true) {
+      var res = await _getopr1();
+      dp("res: $res");
+      if (res == true) {
+        setOperatorTipe();
+        try {
+          listenMessage();
+        } catch (e) {
+          doError("tidak terhubung notofikasi, \nkesalahan:\n$e");
+        }
+        dp('opr.idkontak not null: ${opr.idkontak}');
+
+        dp('_prepareOperator done');
+        udahlogin.value == true;
+        if (prefs.getBool("awal") ?? true) {
+          await db.getlistdata2();
+        }
+        await _navigateBasedOnLogin2();
+        prefs.setBool('auth', true);
+        weslogin = true;
+        return true;
+      } else {
+        dp('Get Opr == false');
+        await handleSignOut();
+        setLoading(false);
+        return false;
+      }
+    }
+  }
+
+  _navigateBasedOnLogin2() async {
+    dp("_navigateBasedOnLogin ${opr.email ?? ''}");
+    dp("Menyiapkan halaman ${tipe.value}");
+
+    await db.getlistdata2();
+
+    if (iSales()) {
+      dp('iSales()');
+      await Get.find<DBController>().initData();
+      Get.offAllNamed('/homesales');
+    } else if (iGudang()) {
+      dp('igudang()');
+      await Get.find<DBController>().initData();
+      dp('thissss');
+      setLoading(false);
+      Get.offAllNamed('/homegudang');
+      /* } else if (isDireksi()) {
+      dp('isDireksi()');
+      await Get.find<DBController>().initData();
+      Get.offAllNamed('/homedireksi'); */
+    } else if (iAdmin()) {
+      dp('IAdmin()');
+      await Get.find<DBController>().initData();
+      Get.offAllNamed('/homeadmin');
+    } else {
+      if (Get.currentRoute != '/login') {
+        dp('goto logn');
+        Get.offAllNamed('/login');
+        await handleSignOut();
+      }
+    }
+    // setLoading(false);
+  }
+
+  setOperatorTipe() {
+    dp('setOperatorTipe(${opr.tipe})');
+    if (opr == opr0) {
+      tipe.value = TipeOperator.none;
+    }
+    switch (opr.tipe) {
+      case 1:
+        tipe.value = TipeOperator.sales;
+        isSales.value = true;
+        isGudang.value = false;
+        isAdmin.value = false;
+        isDireksi.value = false;
+        break;
+      case 2:
+        tipe.value = TipeOperator.gudang;
+        isSales.value = false;
+        isGudang.value = true;
+        isAdmin.value = false;
+        isDireksi.value = false;
+        break;
+      case 3:
+        tipe.value = TipeOperator.admin;
+        isSales.value = false;
+        isGudang.value = false;
+        isAdmin.value = true;
+        isDireksi.value = false;
+        break;
+      case 4:
+        tipe.value = TipeOperator.direksi;
+        isSales.value = false;
+        isGudang.value = false;
+        isAdmin.value = true;
+        isDireksi.value = true;
+        break;
+      default:
+        isSales.value = false;
+        isGudang.value = false;
+        isAdmin.value = false;
+        tipe.value = TipeOperator.none;
+        break;
+    }
+    update();
+  }
+
+  clearOperator() {
+    weslogin = false;
+    currentUser = null;
+    opr = opr0;
+    pegawai = Kontak();
+    tipe.value = TipeOperator.none;
+    isSales.value = false;
+    isGudang.value = false;
+    isAdmin.value = false;
+    udahlogin.value = false;
+    prefs.setBool("auth", false);
+    prefs.setString("email", "");
+    //await insertRepo('islogin', 'false');
+    //await insertRepo('email', '');
+  }
+
+  Future<bool> _getopr1() async {
+    bool resBool = false;
+    dp('getopr');
+    if (currentUser == null) {
+      isUsers = false;
+      await handleSignOut();
+      opr = opr0;
+    } else {
+      isUsers = false;
+
+      // var ioc = HttpClient();
+      // ioc.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+      prosestxt = 'Memeriksa data User';
+      dp(prosestxt);
+      setProses(prosestxt);
+      if (currentUser == null) {
+        doError('User tidak dikenanil');
+        dp("currentUser == null");
+        return false;
+      } else {
+        try {
+          //var urlssss = '$urlBase/opr/';
+          dp("getResponse($urlGetOpr(id: ${currentUser!.email})");
+          var r = await getResponse('$urlBase/opr/', {"id": currentUser!.email});
+          if (r != null) {
+            prosestxt = 'Memeriksa data User.';
+            setProses(prosestxt);
+            var res = r.body;
+            if (res.isNotEmpty) {
+              prosestxt = 'Memeriksa data User..';
+              // dp('res: => $res');
+              opr = Operator.fromMap(res);
+              dp('ok => $opr');
+              if (opr.idkontak != null) {
+                dBase = await db.initDatabase();
+                dbc = Get.find<DBController>();
+                pegawai = await Kontak.byID(opr.idkontak!);
+                pegawai ??= Kontak.fromMap(res['kontak']);
+                if (pegawai != null) {
+                  opr.nama = pegawai!.nama ?? '';
+                  opr.kode = pegawai!.kode ?? '';
+                  opr.photo = currentUser!.photoUrl ?? '';
+                  dp("photo: ${opr.photo}");
+                  setOperatorTipe();
+                  await savestate();
+
+                  // await insertRepo('islogin', 'true');
+                  // await insertRepo('email', opr.email.toString());
+
+                  dp("aksesslokasi: ${opr.akseslokasi.length}");
+                  isUsers = true;
+                  resBool = true;
+                  dp("_getopr1 opr.idkontak != null done....");
+                  return true;
+                } else {
+                  dp('_getopr1 Kesalahan init pegawai');
+                  dp("_getopr1 ${res['kontak']}");
+                  return false;
+                }
+              } else {
+                isUsers = false;
+                doError('Operator tak dikenal');
+                handleSignOut();
+                return false;
+              }
+            }
+          }
+        } catch (e) {
+          doError('Kesalahan _getopr1: $e');
+        }
+      }
+    }
+    return resBool;
+  }
+
+  Future<void> handleSignIn() async {
+    setLoading();
+    //   try {
+    dp('Coba Login..');
+    setProses('Mencoba Login');
+
+    // ignore: body_might_complete_normally_catch_error
+    await googleSignIn.signIn().then((value) => currentUser = value).catchError((e) async {
+      if (e.toString().contains('network_error')) {
+        pesanError1("Tidak ada koneksi Internet", durasi: const Duration(minutes: 5));
+      } else {
+        doError("kesalahan handleSignIn: $e");
+      }
+      setLoading(false);
+      await _setlogout();
+    });
+  }
+
+  Future<void> handleSignOut() async {
+    prosestxt = 'Proses Logout';
+    await setLoading(true);
+    dp(prosestxt);
+    setProses(prosestxt);
+    if (Get.currentRoute != '/login') Get.offAllNamed('/login');
+
+    await googleSignIn.signOut();
+
+    await _setlogout();
+  }
+
+  _setlogout() async {
+    dp('_setlogout');
+
+    await unlistenMessage();
+
+    clearOperator();
+
+    setLoading(false);
+  }
+
+  setLoading([bool val = true]) {
+    isLoading = val;
+    isProses.value = val;
+    update();
+  }
+}

@@ -1,0 +1,43 @@
+{
+	"name": "Mbok Cuity",
+	"short_name": "Mbok Cuity",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#0175C2",
+	"theme_color": "#0175C2",
+	"description": "Lucky Jaya Group Poin of Sales.",
+	"orientation": "portrait-primary",
+	"prefer_related_applications": false,
+	"icons": [
+		{
+			"src": "/assets/assets/icons/Icon-192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/assets/assets/icons/Icon-512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		},
+		{
+			"src": "/assets/assets/icons/Icon-maskable-192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "maskable"
+		},
+		{
+			"src": "icons/Icon-maskable-512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	],
+	"screenshots": [
+		{
+			"src": "/assets/assets/Screenshot.png",
+			"sizes": "1280x800",
+			"type": "image/png",
+			"form_factor": "wide"
+		}
+	]
+}

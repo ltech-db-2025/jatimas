@@ -1,0 +1,209 @@
+// ignore_for_file: depend_on_referenced_packages
+import 'dart:io';
+
+import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:ljm/pages/users/login2/main.dart';
+import 'package:ljm/pages/users/login2/register.dart';
+import 'package:ljm/pages/users/login2/user.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:ljm/tools/env.dart';
+
+final googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Login Page")),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextFormField(
+                controller: usernameController,
+                decoration: const InputDecoration(labelText: 'Username'),
+              ),
+              TextFormField(
+                controller: passwordController,
+                decoration: const InputDecoration(labelText: 'Password'),
+                obscureText: true,
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final user = await loginWithUsernameAndPassword(
+                    usernameController.text,
+                    passwordController.text,
+                  );
+                  if (user != null) {
+                    saveLoginStatus(true, user);
+                    Get.snackbar('Pemberitahuan', 'Login successful.');
+                    Get.off(() => const MainApp());
+                    // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainPage(user: user));
+                  } else {
+                    Get.snackbar('Pemberitahuan', 'Login failed. Please try again.');
+                  }
+                },
+                child: const Text('Login'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Get.to(() => const RegistrationPage());
+                },
+                child: const Text('Register'),
+              ),
+              button(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Fungsi loginWithUsernameAndPassword
+
+  button() => OutlinedButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(Colors.white),
+          shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(40),
+            ),
+          ),
+        ),
+        onPressed: handleSignIn,
+        child: const Padding(
+          padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Image(image: AssetImage("assets/google.png"), height: 24.0),
+              Padding(
+                padding: EdgeInsets.only(left: 10),
+                child: Text(
+                  'Masuk menggunakan Google',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      );
+}
+
+Future<void> saveLoginStatus(bool isLoggedIn, [User? user]) async {
+  prefs.setBool('isLoggedIn', isLoggedIn);
+  if (isLoggedIn && user != null) {
+    prefs.setString('email', user.email ?? '');
+    prefs.setBool('isLoggedIn', true);
+    prefs.setInt('tipe', user.tipe);
+
+    debugPrint(user.email);
+  } else {
+    if (await googleSignIn.isSignedIn()) {
+      await googleSignIn.signOut();
+    }
+    prefs.remove('email');
+  }
+}
+
+getoperator(String email) async {
+  var url = '$urlBase/opr.php';
+  var response = await postResponse(url, {"id": email});
+  dp('Sales API ${response.statusCode} response: ${response.body}');
+  if (response == null) return;
+  List jsonResponse = response.body;
+  if (response.statusCode == 200) {
+    if (jsonResponse.isNotEmpty) {
+      user = jsonResponse.map((job) => User.fromMap(job)).first;
+    }
+  }
+}
+
+handleSignIn() async {
+  final user = await loginWithGoogle();
+  if (user != null) {
+    Get.snackbar('Pemberitahuan', 'Login with Google successful.');
+    Get.off(() => const MainApp());
+  } else {
+    Get.snackbar('Pemberitahuan', 'Login with Google failed.');
+
+    saveLoginStatus(false);
+    await googleSignIn.signOut();
+  }
+}
+
+Future<User?> loginWithGoogle() async {
+  User? user;
+
+  final account = await googleSignIn.signIn();
+  if (account == null) {
+    return null; // Login dibatalkan
+  }
+  // ignore: unused_local_variable
+  // final authentication = await account.authentication;
+  final profileImageUrl = account.photoUrl;
+  if (profileImageUrl != null) {
+    final response = await http.get(Uri.parse(profileImageUrl));
+    if (response.statusCode == 200) {
+      final bytes = response.bodyBytes;
+
+      final localFilePath = '${pathData}profile_image.jpg';
+      final file = File(localFilePath);
+      await file.writeAsBytes(bytes);
+      prefs.setString('profile_image_path', localFilePath);
+      prefs.setString('imageUrl', profileImageUrl);
+    } else {
+      // Handle jika unduhan gambar profil gagal
+      Get.snackbar('Pemberitahuan', 'Lunduhan gambar profil gagal');
+    }
+  }
+
+  user = listUser.firstWhereOrNull((element) => element.email == account.email);
+  saveLoginStatus(true, user);
+  return user;
+}
+
+Future<User?> loginWithUsernameAndPassword(String username, String password) async {
+  var auser = listUser.firstWhereOrNull((element) => element.email == username || element.username == username);
+  if (auser != null) {
+    if (auser.imageUrl != null) {
+      try {
+        final response = await http.get(Uri.parse(auser.imageUrl ?? ''));
+        if (response.statusCode == 200) {
+          final bytes = response.bodyBytes;
+
+          final localFilePath = '${pathData}profile_image.jpg';
+          final file = File(localFilePath);
+          await file.writeAsBytes(bytes);
+          prefs.setString('profile_image_path', localFilePath);
+          prefs.setString('imageUrl', auser.imageUrl ?? '');
+        } else {
+          Get.snackbar('Pemberitahuan', 'Lunduhan gambar profil gagal');
+        }
+      } catch (e) {
+        Get.snackbar('Pemberitahuan', 'Lunduhan gambar profil gagal');
+      }
+    }
+  }
+
+  return auser;
+}

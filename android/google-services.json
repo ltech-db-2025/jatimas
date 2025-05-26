@@ -1,0 +1,239 @@
+{
+  "project_info": {
+    "project_number": "5513625050",
+    "firebase_url": "https://android-app-d01c2.firebaseio.com",
+    "project_id": "android-app-d01c2",
+    "storage_bucket": "android-app-d01c2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5513625050:android:c4c038b6bf70d1820c14e3",
+        "android_client_info": {
+          "package_name": "com.example.google_sign"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "5513625050-29u8tuscn83p1orhh8ofcbcc1gd2iq1f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYfAE-tV2x4qVS23if9vcfkDax3ohVhBI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "5513625050-29u8tuscn83p1orhh8ofcbcc1gd2iq1f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5513625050:android:6833fdb0b154089c0c14e3",
+        "android_client_info": {
+          "package_name": "com.jp.sparepart"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "5513625050-3po9iomkp65vr3qc473m4thoggtflgkr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jp.sparepart",
+            "certificate_hash": "0555118879bd66e129fac878c3dd3fc90c36d97d"
+          }
+        },
+        {
+          "client_id": "5513625050-r3kk21k0jfdc04t0jnlslsc5gkri2pbv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jp.sparepart",
+            "certificate_hash": "03abbe8e155592be56857ca3e06d538bbd9f08bc"
+          }
+        },
+        {
+          "client_id": "5513625050-29u8tuscn83p1orhh8ofcbcc1gd2iq1f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYfAE-tV2x4qVS23if9vcfkDax3ohVhBI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "5513625050-29u8tuscn83p1orhh8ofcbcc1gd2iq1f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5513625050:android:22681c136204b3800c14e3",
+        "android_client_info": {
+          "package_name": "com.luckyjayamotorindo.sparepart"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "5513625050-0p59s6257a18is6s62gc31v1oc7aicoc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luckyjayamotorindo.sparepart",
+            "certificate_hash": "a4e5eca76b0d81f51b703005a7763506a6e97383"
+          }
+        },
+        {
+          "client_id": "5513625050-1ask2k3csiu9uotpblee0vqn59nfjjjn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luckyjayamotorindo.sparepart",
+            "certificate_hash": "dbebc8d6d95ecfe440a6bd134a55ecd3bd29ab4c"
+          }
+        },
+        {
+          "client_id": "5513625050-1ofmld46n88gqtgioagai5chfvme1eau.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luckyjayamotorindo.sparepart",
+            "certificate_hash": "f441cbb950eefa23ed633c25a87230f25d6970d7"
+          }
+        },
+        {
+          "client_id": "5513625050-26qd6n282s6nba3erfi4svatj2289igs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luckyjayamotorindo.sparepart",
+            "certificate_hash": "03abbe8e155592be56857ca3e06d538bbd9f08bc"
+          }
+        },
+        {
+          "client_id": "5513625050-a7tv8qdj86usjnqtl11rnl0thtpdc7kh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luckyjayamotorindo.sparepart",
+            "certificate_hash": "37d7e3308aaf46e319bcc8dacb4f229bfa6ccb7a"
+          }
+        },
+        {
+          "client_id": "5513625050-akk7oh8fm1o7sptkhaj9s6u7msvk6dsn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luckyjayamotorindo.sparepart",
+            "certificate_hash": "de03a5a49190290cdd2e92c3781719081ca69164"
+          }
+        },
+        {
+          "client_id": "5513625050-f7deeqs8indqp8i4q3v3bck8lgjek3j0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luckyjayamotorindo.sparepart",
+            "certificate_hash": "7bb3d60a0dd44e55f9568b776e4288dfa7bb964d"
+          }
+        },
+        {
+          "client_id": "5513625050-fge90e142rvn48p7fdk2gbp72g8kahb7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luckyjayamotorindo.sparepart",
+            "certificate_hash": "e7dc47c8f04f56096c00001bcdd378298aa2a475"
+          }
+        },
+        {
+          "client_id": "5513625050-go1i0nd79dfnrnv7hvg0m69en49m7m7a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luckyjayamotorindo.sparepart",
+            "certificate_hash": "9e77c150eea99967692be37fb4def62640a5c874"
+          }
+        },
+        {
+          "client_id": "5513625050-licme76bb7s4f0ug6djgujqjtpnti7fk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luckyjayamotorindo.sparepart",
+            "certificate_hash": "9d2e879bb9da3d3d4c6324451f3d766e8d9ec585"
+          }
+        },
+        {
+          "client_id": "5513625050-n8q7mtlaefou4vv506lo8t2kprto1ssm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luckyjayamotorindo.sparepart",
+            "certificate_hash": "d9a99964cc7dd56cbf8b1fed1013566d1080373a"
+          }
+        },
+        {
+          "client_id": "5513625050-vlpubj93a2hsp1vjb2nc69tq9llokdf3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.luckyjayamotorindo.sparepart",
+            "certificate_hash": "0555118879bd66e129fac878c3dd3fc90c36d97d"
+          }
+        },
+        {
+          "client_id": "5513625050-29u8tuscn83p1orhh8ofcbcc1gd2iq1f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYfAE-tV2x4qVS23if9vcfkDax3ohVhBI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "5513625050-29u8tuscn83p1orhh8ofcbcc1gd2iq1f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5513625050:android:aa490466d7973f9e0c14e3",
+        "android_client_info": {
+          "package_name": "ljm.olike"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "5513625050-29u8tuscn83p1orhh8ofcbcc1gd2iq1f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYfAE-tV2x4qVS23if9vcfkDax3ohVhBI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "5513625050-29u8tuscn83p1orhh8ofcbcc1gd2iq1f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,16 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "dart.lineLength": 800,
+    "dart.flutterCreateOrganization": null,
+    "editor.defaultFormatter": "Dart-Code.dart-code",
+    "editor.formatOnSave": true,
+    "git.ignoreLimitWarning": true,
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "cmake.sourceDirectory": "D:/Documents/GitHub/android/ljm/windows/runner",
+    "cmake.configureOnOpen": false,
+    "[sql]": {
+        "editor.defaultFormatter": "cweijan.vscode-postgresql-client2"
+    },
+}
