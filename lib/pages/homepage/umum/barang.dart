@@ -43,22 +43,49 @@ Widget buildGridItem(BuildContext context, BARANG data) {
           onTap: () {
             // Show the image preview on tap
             Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => PhotoView.customChild(
-                        enableRotation: true,
-                        child: Scaffold(
-                          appBar: AppBar(
-                            title: Text(data.nama),
+              context,
+              MaterialPageRoute(
+                builder: (context) => PhotoView.customChild(
+                  enableRotation: true,
+                  child: Scaffold(
+                    appBar: AppBar(
+                      title: Text(data.nama),
+                    ),
+                    body: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: Image.network(
+                              data.fileGambar ?? '',
+                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
+                            ),
                           ),
-                          body: Center(child: Image.network(data.fileGambar ?? '')),
-                        ))));
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: ElevatedButton.icon(
+                            icon: Icon(Icons.edit),
+                            label: Text("Edit Gambar"),
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              backgroundColor: Colors.blue,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
           },
           child: CachedNetworkImage(
             imageUrl: data.fileGambar ?? '',
             height: 200,
             width: double.infinity,
-            fit: BoxFit.scaleDown,
+            fit: BoxFit.cover,
             errorWidget: (context, url, error) => const Icon(Icons.error),
           ),
         ),

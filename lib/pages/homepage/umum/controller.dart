@@ -22,7 +22,7 @@ class BarangUmumController extends GetxController {
   var scrollController = ScrollController().obs;
   var isSearching = false.obs;
   var pageSize = 10;
-  late final PagingController<int, BARANG> pagingController = PagingController<int, BARANG>(getNextPageKey: (state) => (state.keys?.last ?? 0) + 1, fetchPage: fetchPage);
+  late final PagingController<int, BARANG> pagingController = PagingController<int, BARANG>(getNextPageKey: (state) => (state.keys?.last ?? 0) + 1, fetchPage: fetchPageMulti);
   var harga = 'JUAL5'.obs;
   var idlokasi = 1.obs;
   var semuastok = true.obs;
@@ -41,7 +41,7 @@ class BarangUmumController extends GetxController {
     'Stok',
     'Satuan',
   ];
-
+  var selectedKategoriList = <int>[].obs; //tambahan update
   onInit() {
     super.onInit();
 
@@ -56,6 +56,8 @@ class BarangUmumController extends GetxController {
       return BARANGKATEGORI.fromMap(row);
     }).toList();
 
+// final merkResults = await executeSql('select * from merk order by merk');
+// brgMerk.value = merkResults.map((row) => MERK.fromMap(row)).toList();
     // loading.value = false;
     update();
   }
@@ -116,5 +118,156 @@ class BarangUmumController extends GetxController {
     pagingController.refresh();
     update();
     // filter(searchController.text);
+  }
+
+//tambahan update
+//tambahan update
+  Future<List<BARANG>> fetchPageMulti(int pageKey) async {
+    var sql = '';
+    if (idlokasi.value > 0) {
+      sql = """select b.id, b.kode, b.nama, b.merk, b.kategori, s.stok, b.${harga.value} harga, b.satuan, b.gambar 
+      from barang b 
+      left join s on s.idlokasi = ${idlokasi.value} and s.idbarang = b.id
+      """;
+      if (!semuastok.value) sql += ' where s.stok > 0';
+    } else {
+      sql = """select b.id, b.kode, b.nama, b.merk, b.kategori, stok, b.${harga.value} harga, b.satuan, b.gambar 
+      from barang b 
+      """;
+      if (!semuastok.value) sql += ' where stok > 0';
+    }
+
+    if (selectedJenis.value > -1 && selectedJenis.value != -6) {
+      sql = addWhere(sql, " idkategori = ${selectedJenis.value} ");
+    }
+
+    // Hanya filter kalau selectedKategoriList ada isinya dan bukan special value -6 (semua)
+    if (selectedKategoriList.isNotEmpty && !selectedKategoriList.contains(-6)) {
+      String kategoriList = selectedKategoriList.join(',');
+      sql = addWhere(sql, " idkategori IN ($kategoriList) ");
+    }
+//     if (selectedMerkList.isNotEmpty) {
+//   String merkList = selectedMerkList.join(',');
+//   sql = addWhere(sql, " idmerk IN ($merkList) ");
+// }
+
+    // sql += " ORDER BY nama LIMIT $pageSize OFFSET $pageKey";
+    if (sortByHarga.value == 'Harga Tertinggi') {
+      sql += " ORDER BY b.${harga.value} DESC";
+    } else if (sortByHarga.value == 'Harga Terendah') {
+      sql += " ORDER BY b.${harga.value} ASC";
+    } else if (sortByStok.value == 'Stok Terbanyak') {
+      sql += " ORDER BY stok DESC";
+    } else if (sortByStok.value == 'Stok Tersedikit') {
+      sql += " ORDER BY stok ASC";
+    } else {
+      sql += " ORDER BY nama ";
+    }
+    sql += " LIMIT $pageSize OFFSET $pageKey";
+    final results = await executeSql(sql);
+    final List<BARANG> items = results.map((row) {
+      return BARANG.fromMap(row);
+    }).toList();
+    return items;
+  }
+
+  kategoriMultiChange(int i) {
+    if (i == -6) {
+      kategoriCap.value = "Semua Kategori";
+      selectedJenis.value = -6;
+      selectedKategoriList.clear();
+    } else {
+      if (selectedKategoriList.contains(i)) {
+        selectedKategoriList.remove(i);
+      } else {
+        selectedKategoriList.add(i);
+      }
+
+      if (selectedKategoriList.isEmpty) {
+        kategoriCap.value = "Semua Kategori";
+        selectedJenis.value = -6;
+      } else {
+        selectedJenis.value = -1; // berarti ada filter multi, bukan single kategori
+        kategoriCap.value = selectedKategoriList.map((id) => brgKategori.firstWhere((e) => e.id == id, orElse: () => BARANGKATEGORI(id: 0, kategori: '')).kategori ?? '').join(", ");
+      }
+    }
+
+    trigger.value++;
+    dp('kategori change: $selectedKategoriList');
+    pagingController.refresh();
+    update();
+  }
+
+  void resetFilter() {
+    selectedKategoriList.clear();
+    selectedJenis.value = -6;
+    // selectedMerkList.clear();
+    // merkCap.value = "Semua Merk";
+    //  merkMultiChange(-6); // atau ID untuk "semua merk"
+    kategoriCap.value = "Semua Kategori";
+    trigger.value++;
+    pagingController.refresh();
+
+    sortByHarga.value = '';
+    sortByStok.value = '';
+    update();
+  }
+
+  //MERK
+//   var brgMerk = <MERK>[].obs;
+// var selectedMerkList = <int>[].obs;
+// var merkCap = "Semua Merk".obs;
+// final merkResults = await executeSql('select * from merk order by merk');
+// brgMerk.value = merkResults.map((row) => MERK.fromMap(row)).toList();
+
+// merkMultiChange(int i) {
+//   if (i == -6) {
+//     merkCap.value = "Semua Merk";
+//     selectedMerkList.clear();
+//   } else {
+//     if (selectedMerkList.contains(i)) {
+//       selectedMerkList.remove(i);
+//     } else {
+//       selectedMerkList.add(i);
+//     }
+
+//     if (selectedMerkList.isEmpty) {
+//       merkCap.value = "Semua Merk";
+//     } else {
+//       merkCap.value = selectedMerkList
+//           .map((id) => brgMerk.firstWhere((e) => e.id == id, orElse: () => MERK(id: 0, merk: '')).merk ?? '')
+//           .join(", ");
+//     }
+//   }
+
+//   trigger.value++;
+//   dp('merk change: $selectedMerkList');
+//   pagingController.refresh();
+//   update();
+// }
+
+//Short Harga
+  var sortByHarga = ''.obs; // '', 'ASC', 'DESC'
+  void setSortByHarga(String sort) {
+    if (sortByHarga.value == sort) {
+      sortByHarga.value = ''; // toggle off
+    } else {
+      sortByHarga.value = sort; // 'ASC' atau 'DESC'
+    }
+    trigger.value++;
+    pagingController.refresh();
+    update();
+  }
+
+  var sortByStok = ''.obs; // '', 'ASC', 'DESC'
+  void setSortByStok(String sort) {
+    if (sortByStok.value == sort) {
+      sortByStok.value = ''; // toggle off
+    } else {
+      sortByStok.value = sort; // 'ASC' atau 'DESC'
+    }
+    trigger.value++;
+    pagingController.refresh();
+    update();
   }
 }

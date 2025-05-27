@@ -6,9 +6,10 @@ import 'package:get/get.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:ljm/pages/homepage/umum/banner.dart';
 import 'package:ljm/pages/homepage/umum/barang.dart';
+import 'package:ljm/pages/homepage/umum/kategori2.dart';
 import 'package:ljm/provider/models/barang.dart';
 import 'controller.dart';
-import 'kategori.dart';
+// import 'kategori.dart';
 
 class UmumPage extends StatefulWidget {
   const UmumPage({super.key});
@@ -20,6 +21,15 @@ class UmumPage extends StatefulWidget {
 class _UmumPageState extends State<UmumPage> {
   var c = getBarangUmumController();
   final scrollController = ScrollController();
+
+  final kategoriBarKey = GlobalKey<State<KategoriFilterBar>>();
+  @override
+  void initState() {
+    super.initState();
+    scrollController.addListener(() {
+      (kategoriBarKey.currentState as dynamic)?.closeOverlay();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +92,11 @@ class _UmumPageState extends State<UmumPage> {
           ],
         ),
         SliverToBoxAdapter(
-          child: kategoriWidget(context, c),
+          child: KategoriFilterBar(
+            key: kategoriBarKey,
+            onFilterApplied: (multiFilters, singleFilters) {},
+          ),
+          // kategoriWidget(context, c),
         ),
         SliverLayoutBuilder(builder: (context, constraints) {
           double itemWidth = (kIsWeb)
